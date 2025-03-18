@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Générateur de Signature Email - OPLUSM</title>
+  <style>
+    :root {
+      --primary-color: #0073B7;
+      --secondary-color: #333333;
+      --light-gray: #f5f5f5;
+      --border-color: #e0e0e0;
+    }
+    
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    @media (min-width: 768px) {
+      .container {
+        flex-direction: row;
+      }
+    }
+    
+    .form-container {
+      flex: 1;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .preview-container {
+      flex: 1;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    h1 {
+      color: var(--primary-color);
+      margin-top: 0;
+      font-size: 24px;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: var(--secondary-color);
+    }
+    
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(74, 134, 232, 0.2);
+    }
+    
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    
+    button:hover {
+      background-color: #3a76d8;
+    }
+    
+    .signature-preview {
+      border: 1px solid var(--border-color);
+      padding: 15px;
+      margin-top: 15px;
+      background-color: white;
+      flex-grow: 1;
+      border-radius: 4px;
+      overflow: auto;
+    }
+    
+    .color-picker {
+      display: flex;
+      gap: 10px;
+      margin-top: 5px;
+    }
+    
+    .color-option {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+    
+    .color-option.selected {
+      border-color: var(--secondary-color);
+    }
+    
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 15px;
+    }
+    
+    .tab {
+      padding: 10px 15px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    
+    .tab.active {
+      border-bottom-color: var(--primary-color);
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+    
+    .upload-logo {
+      display: none;
+    }
+    
+    .upload-btn {
+      display: inline-block;
+      background-color: var(--light-gray);
+      color: var(--secondary-color);
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+    
+    .upload-btn:hover {
+      background-color: #e5e5e5;
+    }
+    
+    .logo-preview {
+      max-width: 150px;
+      max-height: 60px;
+      margin-top: 10px;
+      display: none;
+    }
+    
+    .social-icons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .social-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background-color: var(--light-gray);
+    }
+    
+    .social-icon.selected {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    #copySuccess {
+      display: none;
+      color: green;
+      margin-top: 10px;
+    }
+    
+    .actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="form-container">
+      <h1>Générateur de Signature Email - OPLUSM</h1>
+      <p style="margin-bottom: 15px; color: #666;">Opération Plus Maintenance</p>
+      
+      <div class="tabs">
+        <div class="tab active" data-tab="personal">Informations personnelles</div>
+        <div class="tab" data-tab="company">Entreprise</div>
+        <div class="tab" data-tab="style">Style</div>
+      </div>
+      
+      <div id="personalTab">
+        <div class="form-group">
+          <label for="name">Nom complet *</label>
+          <input type="text" id="name" placeholder="Jean Dupont">
+        </div>
+        
+        <div class="form-group">
+          <label for="position">Poste / Fonction *</label>
+          <input type="text" id="position" placeholder="Directeur Marketing">
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input type="email" id="email" placeholder="jean.dupont@example.com">
+        </div>
+        
+        <div class="form-group">
+          <label for="phone">Téléphone</label>
+          <input type="text" id="phone" placeholder="+33 6 12 34 56 78">
+        </div>
+        
+        <div class="form-group">
+          <label for="mobile">Mobile</label>
+          <input type="text" id="mobile" placeholder="+33 6 12 34 56 78">
+        </div>
+      </div>
+      
+      <div id="companyTab" style="display: none;">
+        <div class="form-group">
+          <label for="company">Entreprise *</label>
+          <input type="text" id="company" placeholder="OPLUSM" value="OPLUSM">
+        </div>
+        
+        <div class="form-group">
+          <label for="slogan">Slogan / Devise</label>
+          <input type="text" id="slogan" placeholder="Opération Plus Maintenance" value="Opération Plus Maintenance">
+        </div>
+        
+        <div class="form-group">
+          <label for="website">Site web</label>
+          <input type="text" id="website" placeholder="www.example.com">
+        </div>
+        
+        <div class="form-group">
+          <label for="address">Adresse</label>
+          <textarea id="address" rows="3" placeholder="123 Rue de l'exemple, 75001 Paris"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="logo">Logo</label>
+          <input type="file" id="logo" class="upload-logo" accept="image/*">
+          <label for="logo" class="upload-btn">Choisir un fichier</label>
+          <img id="logoPreview" class="logo-preview" alt="Aperçu du logo">
+        </div>
+      </div>
+      
+      <div id="styleTab" style="display: none;">
+        <div class="form-group">
+          <label>Couleur principale</label>
+          <div class="color-picker">
+            <div class="color-option selected" style="background-color: #0073B7;" data-color="#0073B7"></div>
+            <div class="color-option" style="background-color: #6AA84F;" data-color="#6AA84F"></div>
+            <div class="color-option" style="background-color: #E69138;" data-color="#E69138"></div>
+            <div class="color-option" style="background-color: #CC0000;" data-color="#CC0000"></div>
+            <div class="color-option" style="background-color: #674EA7;" data-color="#674EA7"></div>
+            <div class="color-option" style="background-color: #333333;" data-color="#333333"></div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Séparateur</label>
+          <select id="separator">
+            <option value="vertical">Vertical (|)</option>
+            <option value="horizontal">Horizontal (ligne)</option>
+            <option value="none">Aucun</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Réseaux sociaux</label>
+          <div class="social-icons">
+            <div class="social-icon" data-social="linkedin">Li</div>
+            <div class="social-icon" data-social="twitter">Tw</div>
+            <div class="social-icon" data-social="facebook">Fb</div>
+            <div class="social-icon" data-social="instagram">In</div>
+          </div>
+        </div>
+        
+        <div id="socialLinks" style="display: none;">
+          <div class="form-group social-link" data-for="linkedin">
+            <label>LinkedIn URL</label>
+            <input type="text" id="linkedinUrl" placeholder="https://www.linkedin.com/in/username">
+          </div>
+          <div class="form-group social-link" data-for="twitter">
+            <label>Twitter URL</label>
+            <input type="text" id="twitterUrl" placeholder="https://twitter.com/username">
+          </div>
+          <div class="form-group social-link" data-for="facebook">
+            <label>Facebook URL</label>
+            <input type="text" id="facebookUrl" placeholder="https://www.facebook.com/username">
+          </div>
+          <div class="form-group social-link" data-for="instagram">
+            <label>Instagram URL</label>
+            <input type="text" id="instagramUrl" placeholder="https://www.instagram.com/username">
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="preview-container">
+      <h1>Aperçu</h1>
+      <div class="signature-preview" id="signaturePreview">
+        <p>Veuillez remplir les champs pour générer votre signature.</p>
+      </div>
+      
+      <div class="actions">
+        <button id="copyBtn">Copier la signature</button>
+        <button id="downloadBtn">Télécharger en HTML</button>
+      </div>
+      
+      <div id="copySuccess">Signature copiée avec succès !</div>
+    </div>
+  </div>
+
+  <script>
+    // Variables pour stocker l'état
+    let mainColor = '#0073B7';
+    let separatorType = 'vertical';
+    let selectedSocials = [];
+    let logoData = null;
+    
+    // Fonction pour mettre à jour la prévisualisation
+    function updatePreview() {
+      const name = document.getElementById('name').value || 'Jean Dupont';
+      const position = document.getElementById('position').value || 'Directeur Marketing';
+      const email = document.getElementById('email').value || 'jean.dupont@example.com';
+      const phone = document.getElementById('phone').value || '';
+      const mobile = document.getElementById('mobile').value || '';
+      const company = document.getElementById('company').value || 'OPLUSM';
+      const website = document.getElementById('website').value || '';
+      const address = document.getElementById('address').value || '';
+      
+      let html = '';
+      
+      // Table de signature
+      html += '<table style="font-family: Arial, sans-serif; font-size: 14px; color: #333333;">';
+      html += '<tr>';
+      
+      // Logo (colonne 1)
+      if (logoData) {
+        html += `<td style="vertical-align: top; padding-right: 15px;">
+                  <img src="${logoData}" alt="${company}" style="max-width: 150px; max-height: 60px;">
+                </td>`;
+      }
+      
+      // Informations de contact (colonne 2)
+      html += '<td style="vertical-align: top;">';
+      
+      // Nom et titre
+      html += `<p style="margin: 0; padding: 0;">
+                <span style="font-weight: bold; font-size: 16px; color: ${mainColor};">${name}</span>`;
+      
+      if (position) {
+        html += `<br><span style="color: #777777;">${position}</span>`;
+      }
+      
+      if (company) {
+        html += `<br><span style="color: #777777;">${company}</span>`;
+      }
+      
+      const slogan = document.getElementById('slogan').value || '';
+      if (slogan) {
+        html += `<br><span style="font-style: italic; font-size: 12px; color: #777777;">${slogan}</span>`;
+      }
+      
+      html += '</p>';
+      
+      // Ligne de séparation si horizontal
+      if (separatorType === 'horizontal') {
+        html += `<hr style="border: none; height: 1px; background-color: ${mainColor}; margin: 5px 0;">`;
+      }
+      
+      // Coordonnées
+      let contactInfo = '';
+      if (phone) contactInfo += `Tél: ${phone}`;
+      if (mobile) {
+        if (contactInfo) {
+          contactInfo += separatorType === 'vertical' ? ' | ' : '<br>';
+        }
+        contactInfo += `Mobile: ${mobile}`;
+      }
+      if (email) {
+        if (contactInfo) {
+          contactInfo += separatorType === 'vertical' ? ' | ' : '<br>';
+        }
+        contactInfo += `<a href="mailto:${email}" style="color: ${mainColor}; text-decoration: none;">${email}</a>`;
+      }
+      if (website) {
+        if (contactInfo) {
+          contactInfo += separatorType === 'vertical' ? ' | ' : '<br>';
+        }
+        contactInfo += `<a href="http://${website.replace(/^https?:\/\//, '')}" style="color: ${mainColor}; text-decoration: none;">${website.replace(/^https?:\/\//, '')}</a>`;
+      }
+      
+      if (contactInfo) {
+        html += `<p style="margin: 5px 0; padding: 0; font-size: 13px;">${contactInfo}</p>`;
+      }
+      
+      // Adresse
+      if (address) {
+        html += `<p style="margin: 5px 0; padding: 0; font-size: 13px; color: #777777;">${address.replace(/\n/g, '<br>')}</p>`;
+      }
+      
+      // Réseaux sociaux
+      if (selectedSocials.length > 0) {
+        html += '<p style="margin: 5px 0; padding: 0;">';
+        
+        if (selectedSocials.includes('linkedin')) {
+          const url = document.getElementById('linkedinUrl').value || '#';
+          html += `<a href="${url}" style="text-decoration: none; margin-right: 5px;">
+                    <span style="display: inline-block; width: 20px; height: 20px; background-color: ${mainColor}; color: white; text-align: center; line-height: 20px; border-radius: 3px; font-size: 12px; font-weight: bold;">Li</span>
+                  </a>`;
+        }
+        
+        if (selectedSocials.includes('twitter')) {
+          const url = document.getElementById('twitterUrl').value || '#';
+          html += `<a href="${url}" style="text-decoration: none; margin-right: 5px;">
+                    <span style="display: inline-block; width: 20px; height: 20px; background-color: ${mainColor}; color: white; text-align: center; line-height: 20px; border-radius: 3px; font-size: 12px; font-weight: bold;">Tw</span>
+                  </a>`;
+        }
+        
+        if (selectedSocials.includes('facebook')) {
+          const url = document.getElementById('facebookUrl').value || '#';
+          html += `<a href="${url}" style="text-decoration: none; margin-right: 5px;">
+                    <span style="display: inline-block; width: 20px; height: 20px; background-color: ${mainColor}; color: white; text-align: center; line-height: 20px; border-radius: 3px; font-size: 12px; font-weight: bold;">Fb</span>
+                  </a>`;
+        }
+        
+        if (selectedSocials.includes('instagram')) {
+          const url = document.getElementById('instagramUrl').value || '#';
+          html += `<a href="${url}" style="text-decoration: none; margin-right: 5px;">
+                    <span style="display: inline-block; width: 20px; height: 20px; background-color: ${mainColor}; color: white; text-align: center; line-height: 20px; border-radius: 3px; font-size: 12px; font-weight: bold;">In</span>
+                  </a>`;
+        }
+        
+        html += '</p>';
+      }
+      
+      html += '</td></tr></table>';
+      
+      document.getElementById('signaturePreview').innerHTML = html;
+    }
+    
+    // Gestion des onglets
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        // Désactiver tous les onglets
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('personalTab').style.display = 'none';
+        document.getElementById('companyTab').style.display = 'none';
+        document.getElementById('styleTab').style.display = 'none';
+        
+        // Activer l'onglet cliqué
+        tab.classList.add('active');
+        const tabName = tab.dataset.tab;
+        document.getElementById(tabName + 'Tab').style.display = 'block';
+      });
+    });
+    
+    // Gestion des couleurs
+    document.querySelectorAll('.color-option').forEach(option => {
+      option.addEventListener('click', () => {
+        document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+        option.classList.add('selected');
+        mainColor = option.dataset.color;
+        updatePreview();
+      });
+    });
+    
+    // Gestion du séparateur
+    document.getElementById('separator').addEventListener('change', function() {
+      separatorType = this.value;
+      updatePreview();
+    });
+    
+    // Gestion des réseaux sociaux
+    document.querySelectorAll('.social-icon').forEach(icon => {
+      icon.addEventListener('click', () => {
+        const social = icon.dataset.social;
+        
+        if (icon.classList.contains('selected')) {
+          // Désélectionner
+          icon.classList.remove('selected');
+          selectedSocials = selectedSocials.filter(s => s !== social);
+        } else {
+          // Sélectionner
+          icon.classList.add('selected');
+          selectedSocials.push(social);
+        }
+        
+        // Afficher/cacher les champs d'URL
+        document.querySelectorAll('.social-link').forEach(link => {
+          if (link.dataset.for === social) {
+            link.style.display = selectedSocials.includes(social) ? 'block' : 'none';
+          }
+        });
+        
+        document.getElementById('socialLinks').style.display = selectedSocials.length > 0 ? 'block' : 'none';
+        
+        updatePreview();
+      });
+    });
+    
+    // Gestion du logo
+    document.getElementById('logo').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          logoData = e.target.result;
+          document.getElementById('logoPreview').src = logoData;
+          document.getElementById('logoPreview').style.display = 'block';
+          updatePreview();
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    
+    // Tous les champs de saisie
+    document.querySelectorAll('input, textarea, select').forEach(input => {
+      input.addEventListener('input', updatePreview);
+    });
+    
+    // Copier la signature
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      const signatureHTML = document.getElementById('signaturePreview').innerHTML;
+      
+      // Créer un élément temporaire
+      const el = document.createElement('div');
+      el.innerHTML = signatureHTML;
+      document.body.appendChild(el);
+      
+      // Sélectionner le contenu
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      
+      // Copier
+      document.execCommand('copy');
+      
+      // Nettoyer
+      selection.removeAllRanges();
+      document.body.removeChild(el);
+      
+      // Afficher le message de succès
+      const successMsg = document.getElementById('copySuccess');
+      successMsg.style.display = 'block';
+      setTimeout(() => {
+        successMsg.style.display = 'none';
+      }, 3000);
+    });
+    
+    // Télécharger la signature
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      const signatureHTML = document.getElementById('signaturePreview').innerHTML;
+      const blob = new Blob([signatureHTML], {type: 'text/html'});
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'signature-email.html';
+      document.body.appendChild(a);
+      a.click();
+      
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 0);
+    });
+    
+    // Initialiser la prévisualisation
+    updatePreview();
+  </script>
+</body>
+</html>
